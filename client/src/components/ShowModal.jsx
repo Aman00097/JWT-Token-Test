@@ -1,15 +1,37 @@
+import axios from 'axios';
 import React from 'react'
 import { Button, Modal, Stack } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
-export default function ShowModal({ show, setShow, action, removeCookies }) {
+export default function ShowModal({ show, setShow, action, deleteDataOf, id, removeCookies }) {
     const navTo = useNavigate();
 
     const handleClose = () => setShow(false);
 
     const handleLogoutOrDelete = () => {
         if (action === 'Delete') {
-
+            if (deleteDataOf === 'category') {
+                axios
+                    .delete(`http://localhost:4000/category/${id}`)
+                    .then((res) => {
+                        handleClose();
+                        console.log(res.data);
+                    })
+                    .catch((err) => {
+                        console.log("Failed to delete category");
+                        console.log(err.message);
+                    });
+            } else {
+                axios.delete(`http://localhost:4000/product/${id}`)
+                    .then((res) => {
+                        handleClose();
+                        console.log(res.data);
+                    })
+                    .catch((err) => {
+                        console.log("Failed to delete category");
+                        console.log(err.message);
+                    });
+            }
         } else {
             removeCookies('jwt');
             navTo('/login')

@@ -28,7 +28,7 @@ export default function SignUp() {
         onSubmit: async (values, action) => {
             const { email, password } = values
             try {
-                const { data } = await axios.post('http://localhost:4000/register', { email, password }, { withCredentials: true });
+                const { data } = await axios.post('http://localhost:4000/users/register', { email, password }, { withCredentials: true });
 
                 if (data.message === 'Login Successful') {
                     action.resetForm();

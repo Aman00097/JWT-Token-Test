@@ -19,7 +19,7 @@ export default function Home() {
             if (!cookies.jwt) {
                 navTo('/login')
             } else {
-                const { data } = await axios.post('http://localhost:4000/', {}, { withCredentials: true });
+                const { data } = await axios.post('http://localhost:4000/users', {}, { withCredentials: true });
                 if (!data.status) {
                     removeCookies('jwt');
                     navTo('/login');

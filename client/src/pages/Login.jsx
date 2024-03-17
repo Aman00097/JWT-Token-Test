@@ -30,7 +30,7 @@ export default function Login() {
         onSubmit: async (values, action) => {
             const { email, password } = values
             try {
-                const { data } = await axios.post('http://localhost:4000/login', { email, password }, { withCredentials: true });
+                const { data } = await axios.post('http://localhost:4000/users/login', { email, password }, { withCredentials: true });
                 console.log(data)
                 if (data.message === 'Login Successful') {
                     action.resetForm();
@@ -64,7 +64,7 @@ export default function Login() {
                                 onChange={data.handleChange}
                                 onBlur={data.handleBlur} />
                             {data.touched.password && data.errors.password && <p style={{ color: "red", margin: "0", fontSize: '12px' }}>{data.errors.password}</p>}
-                            <p className='mb-4' style={{ color: '#A08CB1', textAlign: 'end', cursor: 'pointer' }} onClick={handleShow}>Forget Password</p>
+                            <p className='mb-4' style={{ color: '#A08CB1', textAlign: 'end', cursor: 'pointer' }}><span onClick={handleShow}>Forget Password</span></p>
                         </Form.Group>
                         <Button type='submit' className='w-100 mb-1' style={{ backgroundColor: '#5C218B' }}>Log In</Button>
                     </Form>

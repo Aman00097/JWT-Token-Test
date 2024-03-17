@@ -1,19 +1,14 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Button, Container, Stack, Table } from 'react-bootstrap'
 import ShowModal from '../components/ShowModal';
-
-
-
-let head = ['ID', 'Name', 'Description', 'Status'];
-
-let datas = [
-    { id: '1', name: 'milk', description: 'Lorem Ipsum is simply dummy text', status: true },
-    { id: '2', name: 'fruits', description: 'Lorem Ipsum is simply dummy text', status: false },
-    { id: '3', name: 'Vegetables', description: 'Lorem Ipsum is simply dummy text', status: true },
-]
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 
 export default function Product() {
+    const [search, setSearch] = useState('')
+    const navTo = useNavigate();
+
     return (
         <Container fluid className='p-2'>
             <Stack direction='vertical' gap={3} className='shadow'>
@@ -24,48 +19,85 @@ export default function Product() {
                     </Stack>
                     <div className='d-flex align-items-center border rounded p-1 px-2'>
                         <i class="fa-solid fa-magnifying-glass text-secondary"></i>
-                        <input type="search" className='border-0 ps-3' style={{ outline: 'none', width: '250px' }} />
+                        <input type="search" className='border-0 ps-3' style={{ outline: 'none', width: '250px' }} value={search} onChange={(e) => setSearch(e.target.value)} />
                     </div>
                     <div>
-                        <Button style={{ backgroundColor: '#662671', borderRadius: '10px' }}>Add New</Button>
+                        <Button style={{ backgroundColor: '#662671', borderRadius: '10px' }} onClick={() => navTo('/product/add-data')}>Add Product</Button>
                     </div>
                 </Stack>
 
-                <TableData />
+                <TableData search={search} />
             </Stack>
         </Container>
     )
 }
 
 
+function TableData({ search }) {
+    const [products, setProducts] = useState([]);
+    const [filterData, setFilterData] = useState([]);
+    const [id, setId] = useState();
+    const navTo = useNavigate();
 
-function TableData() {
     const [show, setShow] = useState(false);
-
     const handleShow = () => setShow(true);
 
-    return (<>
-        <Table striped hover>
-            <thead>
-                <tr style={{ backgroundColor: '#FFF8B7' }}>
-                    {head.map((title) => <th className='text-center'>{title}</th>)}
-                </tr>
-            </thead>
-            <tbody>
-                {datas.map((data) => <tr>
-                    <td className='text-center'>{data.id}</td>
-                    <td className='text-center'>{data.name}</td>
-                    <td className='text-center'>{data.description}</td>
-                    <td className='text-center'>{data.status ? 'Active' : 'Inactive'}</td>
-                    <td className='text-center'>
-                        <i class="fa-regular fa-pen-to-square me-2 text-secondary" style={{ cursor: 'pointer' }}></i>
-                        <i class="fa-solid fa-trash text-secondary" style={{ cursor: 'pointer' }} onClick={handleShow}></i>
-                    </td>
-                </tr>)}
-            </tbody>
+    const head = ['ID', 'Name', 'Pack Size', 'Category', 'MRP', 'Image', 'Status'];
 
-        </Table>
-        <ShowModal show={show} setShow={setShow} action={'Delete'} />
+    useEffect(() => {
+        axios
+            .get("http://localhost:4000/product")
+            .then((res) => {
+                console.log(res.data);
+                setProducts(res.data);
+                setFilterData(res.data);
+            })
+            .catch((err) => {
+                console.log(err.message);
+            });
+    }, [show])
+
+    useEffect(() => {
+        setFilterData(products.filter((ele) => ele.name.includes(search)))
+    }, [search])
+
+    return (<>
+        {
+            filterData.length > 0 ? <Table striped hover>
+                <thead>
+                    <tr style={{ backgroundColor: '#FFF8B7' }}>
+                        {head.map((title) => <th className='text-center'>{title}</th>)}
+                    </tr>
+                </thead>
+                <tbody>
+                    {
+                        filterData.map((data, index) => (<tr key={index}>
+                            <td className='text-center'>{index + 1}</td>
+                            <td className='text-center'>{data.name}</td>
+                            <td className='text-center'>{data.packSize}</td>
+                            <td className='text-center'>{data.category}</td>
+                            <td className='text-center'>{data.mrp}</td>
+                            <td className='text-center'><img src={`http://localhost:4000/images/${data.image}`} style={{ width: '50px', height: '50px', borderRadius: '50%' }} /></td>
+                            {
+                                data.status ?
+                                    <td className='text-center text-success'>Active</td> :
+                                    <td className='text-center text-danger'>Inactive</td>
+                            }
+                            <td className='text-center'>
+                                <i class="fa-regular fa-pen-to-square me-2 text-secondary" style={{ cursor: 'pointer' }} onClick={() => {
+                                    navTo(`/product/add-data/${data._id}`)
+                                }}></i>
+                                <i class="fa-solid fa-trash text-secondary" style={{ cursor: 'pointer' }} onClick={() => {
+                                    setId(data._id)
+                                    handleShow();
+                                }}></i>
+                            </td>
+                        </tr>))
+                    }
+                </tbody>
+            </Table> : <h3 className='text-center w-100 my-5'>No Data To Show</h3>
+        }
+        <ShowModal show={show} setShow={setShow} deleteDataOf={'product'} action={'Delete'} id={id} />
     </>
     )
 }
